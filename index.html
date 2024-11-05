@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반응속도 테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    header {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 30px 0;
+      font-size: 48px;
+      position: absolute;
+      top: 20px;
+      width: 100%;
+    }
+    .container {
+      position: relative;
+      width: 60vw;
+      height: 70vh;
+      background-color: #ffffff;
+      border: 2px solid #333;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 150px;
+    }
+    #startBtn {
+      padding: 30px 60px;
+      font-size: 28px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      margin-top: 20px;
+      z-index: 10;
+      position: relative;
+      outline: none; /* 버튼 아래의 이상한 선 없애기 */
+    }
+    #reactionBtn {
+      padding: 20px 40px;
+      font-size: 24px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #f44336;
+      color: white;
+      position: absolute;
+      display: none;
+    }
+    #reactionStatus {
+      margin-top: 10px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #4CAF50;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #scrollableResults {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-left: 30px;
+      border-left: 2px solid #333;
+      padding-left: 10px;
+      font-size: 20px;
+      max-width: 300px;
+      height: 100%;
+    }
+    .result-item {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    반응속도 테스트
+  </header>
+
+  <div class="container">
+    <button id="reactionBtn">클릭하세요!</button>
+    <div id="reactionStatus"></div>
+  </div>
+  <button id="startBtn">시작하기</button>
+
+  <div id="scrollableResults"></div>
+
+  <script>
+    let startBtn = document.getElementById('startBtn');
+    let reactionBtn = document.getElementById('reactionBtn');
+    let reactionStatusDiv = document.getElementById('reactionStatus');
+    let scrollableResults = document.getElementById('scrollableResults');
+    let startTime;
+    let endTime;
+    let timeoutId;
+    let allResults = [];  // 반응속도 값을 저장할 배열
+
+    // 시작 버튼 클릭
+    startBtn.addEventListener('click', () => {
+      startBtn.disabled = true;
+      startBtn.textContent = "진행중...";  // 버튼 텍스트 변경
+      reactionStatusDiv.innerHTML = "";
+      scrollableResults.innerHTML = "";  // 이전 결과 초기화
+      reactionBtn.style.display = 'none'; // 반응 버튼 숨기기
+
+      // 2~5초 사이 랜덤 시간 후에 버튼 색상 변화
+      let randomDelay = Math.floor(Math.random() * 4000) + 2000;
+      timeoutId = setTimeout(() => {
+        reactionBtn.style.display = 'inline-block'; // 반응 버튼 표시
+        reactionBtn.textContent = '클릭하세요!';
+        startTime = Date.now();  // 시작 시간 기록
+        startBtn.textContent = "시작하기";  // 버튼 텍스트 원래대로
+
+        // 랜덤 위치 계산
+        let container = document.querySelector('.container');
+        let containerWidth = container.offsetWidth;
+        let containerHeight = container.offsetHeight;
+        let buttonWidth = reactionBtn.offsetWidth;
+        let buttonHeight = reactionBtn.offsetHeight;
+
+        let randomX = Math.floor(Math.random() * (containerWidth - buttonWidth));
+        let randomY = Math.floor(Math.random() * (containerHeight - buttonHeight));
+
+        reactionBtn.style.left = randomX + 'px';
+        reactionBtn.style.top = randomY + 'px';
+      }, randomDelay);
+    });
+
+    // 반응속도 버튼 클릭
+    reactionBtn.addEventListener('click', () => {
+      endTime = Date.now();  // 반응 시간 기록
+      let reactionTime = endTime - startTime;
+      let statusText = getReactionStatus(reactionTime); // 상태 텍스트 생성
+      reactionStatusDiv.innerHTML = `${statusText} (${reactionTime} 밀리초)`; // 결과 표시
+
+      // 스크롤 영역에 새로운 반응속도 결과를 추가
+      scrollableResults.innerHTML = allResults.map(result => `<div class="result-item">${result}</div>`).join('');
+
+      reactionBtn.style.display = 'none';  // 반응 버튼 숨기기
+      startBtn.disabled = false;  // 시작 버튼 활성화
+    });
+
+    // 반응속도 상태 결정 (기준을 완화)
+    function getReactionStatus(reactionTime) {
+      if (reactionTime < 400) {  // "좋음" 기준을 200ms로 변경
+        return "반응속도: 좋음";
+      } else if (reactionTime >= 200 && reactionTime <= 700) {  // "보통" 기준을 500ms로 변경
+        return "반응속도: 보통";
+      } else {
+        return "반응속도: 나쁨";  // "나쁨" 기준을 500ms 초과로 변경
+      }
+    }
+  </script>
+</body>
+</html>
